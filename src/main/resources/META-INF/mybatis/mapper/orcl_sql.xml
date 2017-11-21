@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.client.mapper.SQLMapper">
+	
+	<select id="select" parameterType="SQLBuilder" resultType="hashmap">
+		
+		select
+			<if test="fetchedColumns != null">
+				<foreach collection="fetchedColumns" item="column" separator=", ">
+					${column}
+				</foreach> 
+			</if>
+			<if test="fetchedColumns == null">
+				*
+			</if>
+		from 
+			${tableName}
+		<if test="where != null">
+			<where>
+				<foreach collection="where" item="each">
+					${each.next} 
+					<choose>
+						<when test="each.value != null">
+							<choose>
+								<when test="each.symbol == 'in'">
+									${each.column} ${each.symbol} 
+									<foreach collection="inList" item="in" open="(" close=")" separator=",">
+										#{in}
+									</foreach>
+								</when>
+								<when test="each.symbol == 'years'">
+									to_char(${each.column}, 'YYYY') = to_char(#{each.value}, 'YYYY')
+								</when>
+								<when test="each.symbol == 'months'">
+									to_char(${each.column}, 'YYYYMM') = to_char(#{each.value}, 'YYYYMM')
+								</when>
+								<when test="each.symbol == 'days'">
+									to_char(${each.column}, 'YYYYMMDD') = to_char(#{each.value}, 'YYYYMMDD')
+								</when>
+								<when test="each.symbol == 'hours'">
+									to_char(${each.column}, 'YYYYMMDDHH24') = to_char(#{each.value}, 'YYYYMMDDHH24')
+								</when>
+								<otherwise>
+									${each.column} ${each.symbol} #{each.value}	
+								</otherwise>
+							</choose>
+						</when>
+						<otherwise>
+							${each.column} ${each.symbol}
+						</otherwise>
+					</choose>
+				</foreach>
+			</where>
+		</if>
+		<if test="orderBy != null">
+			${orderBy}
+		</if>
+	</select>
+	
+	<select id="selectLimit" parameterType="SQLBuilder" resultType="hashmap">
+		select * 
+		from (
+			select
+				row_number() over ${rangeColumn} rn,
+				<if test="fetchedColumns != null">
+					<foreach collection="fetchedColumns" item="column" separator=", ">
+						T.${column}
+					</foreach> 
+				</if>
+				<if test="fetchedColumns == null">
+					T.*
+				</if>
+			from 
+				${tableName} T
+			<if test="where != null">
+				<where>
+					<foreach collection="where" item="each">
+						${each.next} 
+						<choose>
+							<when test="each.value != null">
+								<choose>
+									<when test="each.symbol == 'in'">
+										${each.column} ${each.symbol} 
+										<foreach collection="inList" item="in" open="(" close=")" separator=",">
+											#{in}
+										</foreach>
+									</when>
+									<when test="each.symbol == 'years'">
+										to_char(${each.column}, 'YYYY') = to_char(#{each.value}, 'YYYY')
+									</when>
+									<when test="each.symbol == 'months'">
+										to_char(${each.column}, 'YYYYMM') = to_char(#{each.value}, 'YYYYMM')
+									</when>
+									<when test="each.symbol == 'days'">
+										to_char(${each.column}, 'YYYYMMDD') = to_char(#{each.value}, 'YYYYMMDD')
+									</when>
+									<when test="each.symbol == 'hours'">
+										to_char(${each.column}, 'YYYYMMDDHH24') = to_char(#{each.value}, 'YYYYMMDDHH24')
+									</when>
+									<otherwise>
+										${each.column} ${each.symbol} #{each.value}	
+									</otherwise>
+								</choose>
+							</when>
+							<otherwise>
+								${each.column} ${each.symbol}
+							</otherwise>
+						</choose>
+					</foreach>
+				</where>
+			</if>
+			<if test="orderBy != null">
+				${orderBy}
+			</if>
+		)
+		<where>
+			rn &gt;= ${beginIndex} and rn &lt;= ${endIndex}
+		</where>
+		
+	</select>
+	
+	
+	
+	<select id="nextId" parameterType="string" resultType="int">
+		select seq_${value}.nextval
+		from dual
+	</select>
+	
+	
+	<insert id="insert" parameterType="SQLBuilder">
+		insert into ${tableName} 
+		<foreach collection="insertColumns" item="column" separator=", " open="(" close=")">
+			${column}
+		</foreach>
+		values
+		<foreach collection="insertValues" item="value" separator=", " open="(" close=")">
+			#{value}
+		</foreach>
+	</insert>
+	
+	<update id="update" parameterType="SQLBuilder">
+		update ${tableName}
+		<set>
+			<foreach collection="setList" item="set" separator=", ">
+				${set.column} = #{set.value}
+			</foreach>
+		</set>
+		<where>
+			<foreach collection="where" item="each">
+				${each.next} 
+				<choose>
+					<when test="each.value != null">
+						<choose>
+							<when test="each.symbol == 'in'">
+								${each.column} ${each.symbol} 
+								<foreach collection="inList" item="in" open="(" close=")" separator=",">
+									#{in}
+								</foreach>
+							</when>
+							<when test="each.symbol == 'years'">
+								to_char(${each.column}, 'YYYY') = to_char(#{each.value}, 'YYYY')
+							</when>
+							<when test="each.symbol == 'months'">
+								to_char(${each.column}, 'YYYYMM') = to_char(#{each.value}, 'YYYYMM')
+							</when>
+							<when test="each.symbol == 'days'">
+								to_char(${each.column}, 'YYYYMMDD') = to_char(#{each.value}, 'YYYYMMDD')
+							</when>
+							<when test="each.symbol == 'hours'">
+								to_char(${each.column}, 'YYYYMMDDHH24') = to_char(#{each.value}, 'YYYYMMDDHH24')
+							</when>
+							<otherwise>
+								${each.column} ${each.symbol} #{each.value}	
+							</otherwise>
+						</choose>
+					</when>
+					<otherwise>
+						${each.column} ${each.symbol}
+					</otherwise>
+				</choose>
+			</foreach>
+		</where>
+	</update>
+	
+	<delete id="delete" parameterType="SQLBuilder">
+		delete from ${tableName}
+		<where>
+			<foreach collection="where" item="each">
+				${each.next} 
+				<choose>
+					<when test="each.value != null">
+						<choose>
+							<when test="each.symbol == 'in'">
+								${each.column} ${each.symbol} 
+								<foreach collection="inList" item="in" open="(" close=")" separator=",">
+									#{in}
+								</foreach>
+							</when>
+							<when test="each.symbol == 'years'">
+								to_char(${each.column}, 'YYYY') = to_char(#{each.value}, 'YYYY')
+							</when>
+							<when test="each.symbol == 'months'">
+								to_char(${each.column}, 'YYYYMM') = to_char(#{each.value}, 'YYYYMM')
+							</when>
+							<when test="each.symbol == 'days'">
+								to_char(${each.column}, 'YYYYMMDD') = to_char(#{each.value}, 'YYYYMMDD')
+							</when>
+							<when test="each.symbol == 'hours'">
+								to_char(${each.column}, 'YYYYMMDDHH24') = to_char(#{each.value}, 'YYYYMMDDHH24')
+							</when>
+							<otherwise>
+								${each.column} ${each.symbol} #{each.value}	
+							</otherwise>
+						</choose>
+					</when>
+					<otherwise>
+						${each.column} ${each.symbol}
+					</otherwise>
+				</choose>
+			</foreach>
+		</where>
+	</delete>
+	
+	<select id="method" parameterType="SQLBuilder" resultType="object">
+		select 
+			${groupByMethod}(${groupByColumn})
+		from 
+			${tableName}
+		<if test="where != null">
+			<where>
+				<foreach collection="where" item="each">
+					${each.next} 
+					<choose>
+						<when test="each.value != null">
+							<choose>
+								<when test="each.symbol == 'in'">
+									${each.column} ${each.symbol} 
+									<foreach collection="inList" item="in" open="(" close=")" separator=",">
+										#{in}
+									</foreach>
+								</when>
+								<when test="each.symbol == 'years'">
+									to_char(${each.column}, 'YYYY') = to_char(#{each.value}, 'YYYY')
+								</when>
+								<when test="each.symbol == 'months'">
+									to_char(${each.column}, 'YYYYMM') = to_char(#{each.value}, 'YYYYMM')
+								</when>
+								<when test="each.symbol == 'days'">
+									to_char(${each.column}, 'YYYYMMDD') = to_char(#{each.value}, 'YYYYMMDD')
+								</when>
+								<when test="each.symbol == 'hours'">
+									to_char(${each.column}, 'YYYYMMDDHH24') = to_char(#{each.value}, 'YYYYMMDDHH24')
+								</when>
+								<otherwise>
+									${each.column} ${each.symbol} #{each.value}	
+								</otherwise>
+							</choose>
+						</when>
+						<otherwise>
+							${each.column} ${each.symbol}
+						</otherwise>
+					</choose>
+				</foreach>
+			</where>
+		</if>
+	</select>
+	
+	<select id="groupby" parameterType="SQLBuilder" resultType="hashmap">
+		select 
+			${groupByColumn}, 
+			${groupByMethod}(${groupByTarget}) AS ${groupByMethod}
+		from 
+			${tableName}
+		<if test="where != null">
+			<where>
+				<foreach collection="where" item="each">
+					${each.next} 
+					<choose>
+						<when test="each.value != null">
+							<choose>
+								<when test="each.symbol == 'in'">
+									${each.column} ${each.symbol} 
+									<foreach collection="inList" item="in" open="(" close=")" separator=",">
+										#{in}
+									</foreach>
+								</when>
+								<when test="each.symbol == 'years'">
+									to_char(${each.column}, 'YYYY') = to_char(#{each.value}, 'YYYY')
+								</when>
+								<when test="each.symbol == 'months'">
+									to_char(${each.column}, 'YYYYMM') = to_char(#{each.value}, 'YYYYMM')
+								</when>
+								<when test="each.symbol == 'days'">
+									to_char(${each.column}, 'YYYYMMDD') = to_char(#{each.value}, 'YYYYMMDD')
+								</when>
+								<when test="each.symbol == 'hours'">
+									to_char(${each.column}, 'YYYYMMDDHH24') = to_char(#{each.value}, 'YYYYMMDDHH24')
+								</when>
+								<otherwise>
+									${each.column} ${each.symbol} #{each.value}	
+								</otherwise>
+							</choose>
+						</when>
+						<otherwise>
+							${each.column} ${each.symbol}
+						</otherwise>
+					</choose>
+				</foreach>
+			</where>
+		</if>
+		group by ${groupByColumn}
+	</select>
+	
+	
+	
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Valid 한 설정 xml을 만들기 위해 DTD를 추가해 줍니다. -->
+<!DOCTYPE configuration
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <typeAliases>
+        <typeAlias alias="SQLBuilder" type="com.client.sql.SQLBuilder"/>
+    </typeAliases>
+    
+    <mappers>
+<!--         <mapper resource="META-INF/mybatis/mapper/orcl_sql.xml" /> -->
+        <mapper resource="META-INF/mybatis/mapper/mysql.xml" />
+    </mappers>
+    
+</configuration>
